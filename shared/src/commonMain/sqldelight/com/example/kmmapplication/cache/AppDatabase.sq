@@ -1,0 +1,17 @@
+CREATE TABLE CountryInfoCard (
+    name TEXT NOT NULL,
+    capital TEXT NOT NULL,
+    region TEXT NOT NULL,
+    population INTEGER NOT NULL
+);
+
+insertCountryInfoCard:
+INSERT INTO CountryInfoCard(name, capital, region, population)
+VALUES(?, ?, ?, ?);
+
+removeAllCountryInfoCards:
+DELETE FROM CountryInfoCard;
+
+selectAllCountryInfoCards:
+SELECT CountryInfoCard.*
+FROM CountryInfoCard;
