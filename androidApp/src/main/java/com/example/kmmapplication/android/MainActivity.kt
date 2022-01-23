@@ -1,49 +1,38 @@
 package com.example.kmmapplication.android
 
 import android.os.Bundle
-import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.kmmapplication.CountriesInfoSDK
-import com.example.kmmapplication.cache.DatabaseDriverFactory
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import com.example.kmmapplication.android.ui.CountryInfoCardsList
+import com.example.kmmapplication.entity.CountryInfoCard
+import com.example.kmmapplication.network.CountryInfoCardApi
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
     private val mainScope = MainScope()
 
-    private lateinit var countryInfoCardsRecyclerView: RecyclerView
-    private lateinit var progressBarView: FrameLayout
-    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private val api = CountryInfoCardApi()
+    private lateinit var countryInfoCards: List<CountryInfoCard>
 
-    private val sdk = CountriesInfoSDK(DatabaseDriverFactory(this))
-
-    private val countryInfoCardsRvAdapter = CountryInfoCardsRvAdapter(listOf())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         title = "Country info cards"
-        setContentView(R.layout.activity_main)
 
-        countryInfoCardsRecyclerView = findViewById(R.id.countryInfoCardsRvAdapter)
-        progressBarView = findViewById(R.id.progressBar)
-        swipeRefreshLayout = findViewById(R.id.swipeContainer)
-
-        countryInfoCardsRecyclerView.adapter = countryInfoCardsRvAdapter
-        countryInfoCardsRecyclerView.layoutManager = LinearLayoutManager(this)
-
-        swipeRefreshLayout.setOnRefreshListener {
-            swipeRefreshLayout.isRefreshing = false
-            displayCountryInfoCards(true)
-        }
-
-        displayCountryInfoCards(false)
+        displayCountryInfoCards()
     }
 
     override fun onDestroy() {
@@ -51,18 +40,34 @@ class MainActivity : AppCompatActivity() {
         mainScope.cancel()
     }
 
-    private fun displayCountryInfoCards(needReload: Boolean) {
-        progressBarView.isVisible = true
+    private fun displayCountryInfoCards() {
         mainScope.launch {
             kotlin.runCatching {
-                sdk.getcountryInfoCards(needReload)
+                api.getAllCountryInfoCards()
             }.onSuccess {
-                countryInfoCardsRvAdapter.countryInfoCards = it
-                countryInfoCardsRvAdapter.notifyDataSetChanged()
+                setContent {
+                    Surface(color = MaterialTheme.colors.background) {
+                        var refreshing by remember { mutableStateOf(false) }
+                        LaunchedEffect(refreshing) {
+                            if (refreshing) {
+                                delay(3000)
+                                refreshing = false
+                            }
+                        }
+                        SwipeRefresh(
+                            state = rememberSwipeRefreshState(isRefreshing = refreshing),
+                            onRefresh = { refreshing = true },
+                        ) {
+                            CountryInfoCardsList(
+                                modifier = Modifier.fillMaxSize(),
+                                cards = it
+                            )
+                        }
+                    }
+                }
             }.onFailure {
                 Toast.makeText(this@MainActivity, it.localizedMessage, Toast.LENGTH_SHORT).show()
             }
-            progressBarView.isVisible = false
         }
     }
 }

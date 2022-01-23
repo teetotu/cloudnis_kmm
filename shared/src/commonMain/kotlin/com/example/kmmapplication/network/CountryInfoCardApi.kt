@@ -7,7 +7,7 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import kotlinx.serialization.json.Json
 
-class CountryNameApi {
+class CountryInfoCardApi {
     private val httpClient = HttpClient {
         install(JsonFeature) {
             val json = Json {

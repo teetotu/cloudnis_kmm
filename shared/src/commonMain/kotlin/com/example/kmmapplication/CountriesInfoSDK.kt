@@ -3,11 +3,11 @@ package com.example.kmmapplication
 import com.example.kmmapplication.cache.Database
 import com.example.kmmapplication.cache.DatabaseDriverFactory
 import com.example.kmmapplication.entity.CountryInfoCard
-import com.example.kmmapplication.network.CountryNameApi
+import com.example.kmmapplication.network.CountryInfoCardApi
 
 class CountriesInfoSDK(databaseDriverFactory: DatabaseDriverFactory) {
     private val database = Database(databaseDriverFactory)
-    private val api = CountryNameApi()
+    private val api = CountryInfoCardApi()
 
     @Throws(Exception::class)
     suspend fun getcountryInfoCards(forceReload: Boolean): List<CountryInfoCard> {

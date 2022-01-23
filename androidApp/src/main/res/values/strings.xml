@@ -6,4 +6,5 @@
     <string name="capital_filed">Capital: %s</string>
     <string name="region_field">Region: %s</string>
     <string name="population">Population: %s</string>
+    <string name="title_activity_main2">MainActivity2</string>
 </resources>
